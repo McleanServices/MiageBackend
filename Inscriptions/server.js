@@ -1,61 +1,52 @@
 //Inscriptions
-const sql = require('mssql');
-const express = require('express');
-const { connectDB } = require('./db');
 
+// === Importation des modules ===
+const sql = require('mssql');// Module SQL Server
+const express = require('express');// Framework Express
+const bodyParser = require('body-parser');// Pour lire le JSON dans les requêtes
+const inscriptionRoutes = require('./formulaire_inscription');// Les routes d'inscription (formulaire.js)
+const { connectDB, pool, poolConnect } = require('./db');// Connexion à la BDD
+const cors = require('cors'); // Pour autoriser les appels cross-origin (HTML local → API)
 
+// === Initialisation de l'application Express ===
 const app = express();
+
+// Définir le port d'écoute (par défaut 3000 si non défini dans .env)
+app.use(cors());
+
 const PORT = process.env.PORT || 3000;
 
+// Middleware pour parser automatiquement le JSON reçu
+app.use(bodyParser.json());
 
+// Connexion à la base de données (affiche "Connexion réussie" ou erreur)
 connectDB();
 
+// Utilisation des routes d'inscription
+// Toute requête vers /api/inscription passera par formulaire.js
+app.use('/api/formulaire_inscription', inscriptionRoutes);
 
+// Lancer le serveur sur le port défini
+app.listen(PORT, () => {
+    console.log(`Serveur lancé sur le port ${PORT}`);
+});
 
-
-// Configuration via .env
-const dbConfig = {
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    server: process.env.DB_SERVER,
-    port: parseInt(process.env.DB_PORT || '1433'),
-    database: process.env.DB_DATABASE,
-    options: {
-        encrypt: false,
-        trustServerCertificate: true
-    },
-    pool: {
-        max: 10,
-        min: 0,
-        idleTimeoutMillis: 30000
-    }
-};
-
-
-
-
+// Route GET basique (vérification que l’API tourne bien)
 app.get('/', (req, res) => {
   res.send('API en ligne');
 });
 
 
-// Création du pool global
-const pool = new sql.ConnectionPool(dbConfig);
-const poolConnect = pool.connect(); // Lancer la connexion au démarrage
-
-
-
-
-// Route GET /api/utilisateurs
+// Route GET pour récupérer tous les utilisateurs depuis la table SQL
 app.get('/api/utilisateurs', async (req, res) => {
     try {
         await poolConnect; // s'assurer que le pool est bien connecté
 
-
+        // Exécuter la requête SQL
         const result = await pool.request()
             .query('SELECT * FROM Utilisateur');
 
-
+        // Renvoyer les résultats sous forme JSON
         res.json(result.recordset);
     } catch (err) {
         console.error('Erreur lors de la requête SQL :', err);
@@ -64,6 +55,3 @@ app.get('/api/utilisateurs', async (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-  console.log(`Serveur lancé sur le port ${PORT}`);
-});
