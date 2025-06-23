@@ -1,0 +1,67 @@
+<!-- HTML fictif pour test dev-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    form { max-width: 300px; margin: auto; }
+    input, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+    .message {
+      text-align: center;
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Connexion</h2>
+
+  <form id="login-form">
+    <input name="email" type="email" placeholder="Email" required>
+    <input name="mot_de_passe" type="password" placeholder="Mot de passe" required>
+    <button type="submit">Se connecter</button>
+  </form>
+
+  <div class="message" id="message"></div>
+
+  <script>
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.querySelector("input[name='email']").value;
+      const mot_de_passe = document.querySelector("input[name='mot_de_passe']").value;
+      const messageDiv = document.getElementById("message");
+
+      try {
+        const response = await fetch("http://localhost:3000/api/formulaire_login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, mot_de_passe })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          messageDiv.textContent = result.message || "Erreur de connexion";
+        } else {
+          messageDiv.style.color = "green";
+          messageDiv.textContent = "✅ Connexion réussie ! Bonjour " + result.utilisateur.prenom;
+        }
+
+      } catch (err) {
+        console.error(err);
+        messageDiv.textContent = "Erreur de communication avec le serveur";
+      }
+    });
+  </script>
+
+</body>
+</html>

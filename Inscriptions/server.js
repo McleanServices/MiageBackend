@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');// Pour lire le JSON dans les requête
 const inscriptionRoutes = require('./formulaire_inscription');// Les routes d'inscription (formulaire.js)
 const { connectDB, pool, poolConnect } = require('./db');// Connexion à la BDD
 const cors = require('cors'); // Pour autoriser les appels cross-origin (HTML local → API)
+const loginRoutes = require('./formulaire_login');
 
 // === Initialisation de l'application Express ===
 const app = express();
@@ -25,6 +26,8 @@ connectDB();
 // Utilisation des routes d'inscription
 // Toute requête vers /api/inscription passera par formulaire.js
 app.use('/api/formulaire_inscription', inscriptionRoutes);
+
+app.use('/api/formulaire_login', loginRoutes);
 
 // Lancer le serveur sur le port défini
 app.listen(PORT, () => {
